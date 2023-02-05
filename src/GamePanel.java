@@ -18,8 +18,8 @@ public class GamePanel extends JPanel implements ActionListener {
 	static final int UNIT_SIZE = 25;
 	static final int GAME_UNITS = (SCREEN_WIDTH * SCREEN_HEIGHT) / UNIT_SIZE;
 	static final int DELAY = 75;
-	final int x[] = new int[GAME_UNITS];
-	final int y[] = new int[GAME_UNITS];
+	final int[] x = new int[GAME_UNITS];
+	final int[] y = new int[GAME_UNITS];
 	int bodyParts = 4;
 	int applesEaten;
 	int appleX;
@@ -73,13 +73,15 @@ public class GamePanel extends JPanel implements ActionListener {
 				}
 			}
 
-			g.setColor(Color.GREEN);
-			g.setFont(new Font("Ink Free", Font.BOLD, 24));
-
 			FontMetrics metrics = getFontMetrics(g.getFont());
 
-			g.drawString("Score: " + applesEaten, (SCREEN_WIDTH - metrics.stringWidth("Score: " + applesEaten)) / 2,
-					SCREEN_HEIGHT / g.getFont().getSize());
+			writeDisplayText(g,
+					Color.GREEN,
+					24,
+					"Score: " + applesEaten,
+					(SCREEN_WIDTH - metrics.stringWidth("Score: " + applesEaten)) / 2,
+					(SCREEN_HEIGHT / g.getFont().getSize()) - metrics.stringWidth("Score: " + applesEaten) / 2);
+
 		} else {
 			gameOver(g);
 		}
@@ -93,31 +95,23 @@ public class GamePanel extends JPanel implements ActionListener {
 		}
 
 		switch (direction) {
-			case 'U': // Move up
-				y[0] = y[0] - UNIT_SIZE;
-				break;
-
-			case 'D': // Move down
-				y[0] = y[0] + UNIT_SIZE;
-				break;
-
-			case 'L': // Move left
-				x[0] = x[0] - UNIT_SIZE;
-				break;
-
-			case 'R': // Move right
-				x[0] = x[0] + UNIT_SIZE;
-				break;
-
-			default:
-				break;
+			case 'U' -> // Move up
+					y[0] = y[0] - UNIT_SIZE;
+			case 'D' -> // Move down
+					y[0] = y[0] + UNIT_SIZE;
+			case 'L' -> // Move left
+					x[0] = x[0] - UNIT_SIZE;
+			case 'R' -> // Move right
+					x[0] = x[0] + UNIT_SIZE;
+			default -> {
+			}
 		}
 	}
 
 	public void newApple() {
 		// Create new apple at random position
-		appleX = random.nextInt((int) (SCREEN_WIDTH / UNIT_SIZE)) * UNIT_SIZE;
-		appleY = random.nextInt((int) (SCREEN_WIDTH / UNIT_SIZE)) * UNIT_SIZE;
+		appleX = random.nextInt(SCREEN_WIDTH / UNIT_SIZE) * UNIT_SIZE;
+		appleY = random.nextInt(SCREEN_WIDTH / UNIT_SIZE) * UNIT_SIZE;
 	}
 
 	public void checkApple() {
@@ -129,14 +123,15 @@ public class GamePanel extends JPanel implements ActionListener {
 	}
 
 	public void checkCollisions() {
-		// Checks if snakes's head collides with its body
+		// Checks if snake's head collides with its body
 		for (int i = bodyParts; i > 0; i--) {
 			if ((x[0] == x[i]) && (y[0] == y[i])) {
 				running = false;
+				break;
 			}
 		}
 
-		// Check if snakes's head touches screen borders
+		// Check if snake's head touches screen borders
 		if (x[0] < 0) { // left border
 			running = false;
 		}
@@ -160,21 +155,38 @@ public class GamePanel extends JPanel implements ActionListener {
 
 	public void gameOver(Graphics g) {
 		// Displays score
-		g.setColor(Color.RED);
-		g.setFont(new Font("Ink Free", Font.BOLD, 24));
-
 		FontMetrics scoreMetrics = getFontMetrics(g.getFont());
-
-		g.drawString("Score: " + applesEaten, (SCREEN_WIDTH - scoreMetrics.stringWidth("Score: " + applesEaten)) / 2,
-				SCREEN_HEIGHT / 2 + (g.getFont().getSize() * 2));
+		writeDisplayText(g,
+				Color.RED,
+				24,
+				"Score: " + applesEaten,
+				SCREEN_WIDTH / 2 - (scoreMetrics.stringWidth("Score: " + applesEaten) * 2) / 2,
+				SCREEN_HEIGHT / 2 + (g.getFont().getSize() * 4));
 
 		// Game over text
-		g.setColor(Color.RED);
-		g.setFont(new Font("Ink Free", Font.BOLD, 75));
-
 		FontMetrics gameOverMetrics = getFontMetrics(g.getFont());
+		writeDisplayText(g,
+				Color.RED,
+				75,
+				"Game Over",
+				gameOverMetrics.stringWidth("Game Over") / 2,
+				SCREEN_HEIGHT / 2);
+		/*
+		 * g.setColor(Color.RED);
+		 * g.setFont(new Font("Ink Free", Font.BOLD, 75));
+		 * 
+		 * 
+		 * g.drawString("Game Over", (SCREEN_WIDTH -
+		 * gameOverMetrics.stringWidth("Game Over")) / 2, SCREEN_HEIGHT / 2);
+		 */
+	}
 
-		g.drawString("Game Over", (SCREEN_WIDTH - gameOverMetrics.stringWidth("Game Over")) / 2, SCREEN_HEIGHT / 2);
+	private void writeDisplayText(Graphics g, Color fontColor, int fontSize, String text,
+								  int x, int y) {
+		g.setColor(fontColor);
+		g.setFont(new Font("Ink Free", Font.BOLD, fontSize));
+
+		g.drawString(text, x, y);
 	}
 
 	@Override
@@ -194,33 +206,26 @@ public class GamePanel extends JPanel implements ActionListener {
 		@Override
 		public void keyPressed(KeyEvent e) {
 			switch (e.getKeyCode()) {
-				case KeyEvent.VK_LEFT:
+				case KeyEvent.VK_LEFT -> {
 					if (direction != 'R') { // Prevents snake from moving in opposite direction
 						direction = 'L';
 					}
-
-					break;
-
-				case KeyEvent.VK_RIGHT:
+				}
+				case KeyEvent.VK_RIGHT -> {
 					if (direction != 'L') { // Prevents snake from moving in opposite direction
 						direction = 'R';
 					}
-
-					break;
-
-				case KeyEvent.VK_UP:
+				}
+				case KeyEvent.VK_UP -> {
 					if (direction != 'D') { // Prevents snake from moving in opposite direction
 						direction = 'U';
 					}
-
-					break;
-
-				case KeyEvent.VK_DOWN:
+				}
+				case KeyEvent.VK_DOWN -> {
 					if (direction != 'U') { // Prevents snake from moving in opposite direction
 						direction = 'D';
 					}
-
-					break;
+				}
 			}
 		}
 	}
